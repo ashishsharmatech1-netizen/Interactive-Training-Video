@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Innovatiview Training Video Quiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root{
+            --primary-color:#3498db; --secondary-color:#2980b9;
+            --success-color:#2ecc71; --error-color:#e74c3c;
+            --bg:#f5f7fa; --card:#fff; --text:#34495e;
+            --radius:12px; --shadow:0 8px 20px rgba(0,0,0,0.08); --transition: all .28s;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+            font-family: 'Segoe UI', Roboto, system-ui;
+            background: linear-gradient(135deg,#f5f7fa 0,#e4e8eb 100%);
+            color:var(--text); max-width:960px;margin:18px auto;padding:18px;
+        }
+        .header{background:var(--card);padding:20px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;margin-bottom:18px;position:relative}
+        .header h1{font-size:24px;margin-bottom:6px}
+        .subtitle{color:var(--primary-color);font-weight:600}
+        .form-card{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:18px}
+        .form-row{display:flex;gap:12px}
+        .form-row input{flex:1;padding:12px;border-radius:10px;border:1px solid #dfe6ee;font-size:15px}
+        .small{width:180px}
+        .start-btn{margin-top:12px;padding:12px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:#fff;font-weight:700;cursor:pointer}
+        .start-btn:disabled{opacity:.5;cursor:not-allowed}
+        .video-container{position:relative;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);background:#000;margin-bottom:14px}
+        video{width:100%;display:block;aspect-ratio:16/9;background:#000}
+        .progress-indicator{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.7);color:#fff;padding:8px 12px;border-radius:20px;font-size:13px;z-index:4;display:flex;align-items:center}
+        .questions-container{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px;display:none}
+        .questions-container.show{display:block}
+        .question-box{background:#f8f9fa;padding:16px;border-radius:12px;border-left:4px solid var(--primary-color);margin-bottom:14px}
+        .question{font-size:18px;font-weight:700;margin-bottom:12px;position:relative}
+        .options{display:flex;flex-direction:column;gap:10px}
+        .option{padding:12px 14px;background:#fff;border-radius:10px;border:2px solid #eef2f6;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:10px;min-height:56px}
+        .option:hover{transform:translateX(4px)}
+        .option .num{width:28px;height:28px;border-radius:6px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#576574}
+        .option.selected{background:#e3f7eb;border-color:#c3e6cb;color:#155724}
+        .option.wrong{background:#fde8e8;border-color:#f5c6cb;color:#721c24}
+        .feedback-message{padding:12px;border-radius:10px;margin-top:10px;display:none}
+        .feedback-correct{background:#e3f7eb;color:#0b6b3a;display:block}
+        .feedback-wrong{background:#fde8e8;color:#7f1d1d;display:block}
+        .progress{display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);margin-bottom:16px}
+        .submit-container{text-align:center;margin:14px 0;display:none}
+        .submit-btn{padding:12px 28px;border-radius:28px;border:none;background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:#fff;font-weight:700;cursor:pointer}
+        .loading{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:200}
+        .spinner{width:46px;height:46px;border-radius:50%;border:6px solid rgba(255,255,255,.25);border-top-color:var(--primary-color);animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media (max-width:560px){.form-row{flex-direction:column}.small{width:100%}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Interactive Training Video Quiz</h1>
+    </div>
+
+    <!-- USER FORM -->
+    <div class="form-card" id="user-form">
+        <div style="display:flex;flex-direction:column;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <!-- ✅ Project Code -->
+            <div style="flex:1;min-width:180px">
+                <label style="font-weight:700;margin-bottom:6px;display:block">Exam name</label>
+                <input id="examName" type="text" value="AIIMS-BIO" readonly />
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:180px">
+                <label style="font-weight:700;margin-bottom:6px;display:block">Name</label>
+                <input id="userName" type="text" placeholder="आपका नाम (पूरा नाम)" />
+            </div>
+            <div style="min-width:180px">
+                <label style="font-weight:700;margin-bottom:6px;display:block">Contact Number</label>
+                <input id="userContact" type="tel" placeholder="10-digit मोबाइल नंबर" pattern="[0-9]{10}" />
+            </div>
+            <div style="min-width:160px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center">
+                <button id="startBtn" class="start-btn" disabled>Start Training</button>
+                <small style="color:#7f8c8d;margin-top:6px">नाम और 10-अंकों का नंबर भरें</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIDEO -->
+    <div class="video-container" id="video-wrapper" style="display:none">
+        <video id="quiz-video" playsinline preload="metadata" poster="https://via.placeholder.com/1280x720?text=Training+Video">
+            <source src="iris-before-exam.mp4" type="video/mp4">
+            Your browser does not support video.
+        </video>
+        <div class="progress-indicator" id="progress-indicator"><i class="fas fa-question-circle"></i> Question 0/0</div>
+    </div>
+
+    <!-- Inline questions container -->
+    <div class="questions-container" id="questions-container"></div>
+
+    <div class="progress" id="progress"><i class="fas fa-clipboard-check"></i> Answered: <strong id="answered-count">0</strong>/<span id="total-count">0</span> questions</div>
+
+    <div class="submit-container" id="submit-container">
+        <button class="submit-btn" id="submit-btn">Finish Training</button>
+    </div>
+
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw-bGjR4wuurseETRPaltGbiV1Sxb1wAn3Vlh5z1h07VKPm16u0qD9v0OL8wioaXT2Crg/exec";
+
+/* ---------- QUIZ DATA ---------- */
+const quizData = [
+    { timestamp: 52, // at 0:44
+                question: " Biometric में हमें किन सामग्री की जरूरत पड़ेगी?",
+                options: [
+                    "Tablet (टैबलेट) / IRIS Scanner",
+                    "Tablet (टैबलेट) / Hologram (होलोग्राम) / OTG / IRIS",
+                    "Tablet (टैबलेट) / charge (चार्जर) / OTG / Phone",
+                    "Hologram (होलोग्राम) / laptop (लैपटॉप) / FPS / QR"
+                ],
+                correctAnswer: 1
+            },
+            {
+                timestamp: 89, // at 1:29
+                question: "Mock Day पर सुपरवाइजर सेंटर पर जाकर किससे मिलेगा?",
+                options: [
+                    "Center Gaurd (केंद्र गार्ड)",
+                    "Teacher (शिक्षक)",
+                    "Center Incharge (केंद्र अधीक्षक)",
+                    "Vendor (विक्रेता)"
+                ],
+                correctAnswer: 2
+            },
+            {
+                timestamp: 160, // at 2:25
+                question: "Mock Form में Details भरने के बाद क्या करना है?",
+                options: [
+                    "Mock Form पर Principal से sign और Stamp लगवाएं",
+                    "Entry-Exit points check करें",
+                    "A और B दोनों करना होगा",
+                    "None of the above (इनमे से कोई भी नहीं)"
+                ],
+                correctAnswer: 2
+            },
+            {
+                timestamp: 245, // at 3:48
+                question: "Enrollment प्रक्रिया पूरी होने के बाद होलोग्राम कहां लगाया जाएगा?",
+                options: [
+                    "Admit Card (प्रवेश पत्र पर",
+                    "Aadhaar Card (आधार कार्ड पर) ",
+                    "Candidate Photo (उम्मीदवार की फोटो पर)",
+                    "None of These (इनमें से कोई नहीं)"
+                ],
+                correctAnswer: 0
+            },
+            {
+                timestamp: 300, // at 5:06
+                question: "Enrollment प्रक्रिया पूरी होने के बाद अगला प्रोसेस क्या होगा?",
+                options: [
+                    "Check Data Sync Pending Status (डेटा सिंक Pending है या नहीं, इसकी जांच करें)",
+                    "Present Count Match with Principal (प्रधानाचार्य के अनुसार उपस्थिति सही है)",
+                    "Get CSR Report Sign & Stamp by Principal (CSR रिपोर्ट प्रधानाचार्य से साइन और स्टैंप कराएं)",
+                    "All of these (उपरोक्त सभी)"
+                ],
+                correctAnswer: 0 }
+];
+
+/* ---------- STATE ---------- */
+const sessionId = (() => {
+    const k = 'quiz_session_v2';
+    let v = localStorage.getItem(k);
+    if (!v) { v = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem(k, v); }
+    return v;
+})();
+let userName = "";
+let userContact = "";
+let examName = document.getElementById('examName').value; // ✅ auto-filled project code
+let answeredCount = 0;
+let userAnswers = Array(quizData.length).fill(null);
+let attempts = Array(quizData.length).fill(0);
+
+/* ---------- DOM ---------- */
+const startBtn = document.getElementById('startBtn');
+const userNameEl = document.getElementById('userName');
+const userContactEl = document.getElementById('userContact');
+const videoWrapper = document.getElementById('video-wrapper');
+const video = document.getElementById('quiz-video');
+const progressIndicator = document.getElementById('progress-indicator');
+const questionsContainer = document.getElementById('questions-container');
+const answeredCountEl = document.getElementById('answered-count');
+const totalCountEl = document.getElementById('total-count');
+const submitContainer = document.getElementById('submit-container');
+const submitBtn = document.getElementById('submit-btn');
+
+/* ---------- Initialization ---------- */
+totalCountEl.textContent = quizData.length;
+progressIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Question 0/${quizData.length}`;
+
+/* Enable start button only when name + 10-digit contact valid */
+function validateFormInputs(){
+    const nameOk = userNameEl.value.trim().length > 0;
+    const contact = (userContactEl.value || "").trim();
+    const contactOk = /^[0-9]{10}$/.test(contact);
+    startBtn.disabled = !(nameOk && contactOk);
+}
+userNameEl.addEventListener('input', validateFormInputs);
+userContactEl.addEventListener('input', validateFormInputs);
+
+/* Start training */
+startBtn.addEventListener('click', () => {
+    userName = userNameEl.value.trim();
+    userContact = userContactEl.value.trim();
+    if(!/^[0-9]{10}$/.test(userContact)){
+        alert('कृपया 10 अंकों का सही मोबाइल नंबर डालें।');
+        return;
+    }
+    document.getElementById('user-form').style.display = 'none';
+    videoWrapper.style.display = 'block';
+    video.muted = false;
+    video.play().catch(err => console.warn("Autoplay failed:", err));
+    createQuestionBoxes();
+});
+
+/* On video timeupdate check timestamps */
+video.addEventListener('timeupdate', () => {
+    const t = Math.floor(video.currentTime);
+    for(let i=0;i<quizData.length;i++){
+        if(userAnswers[i] === null && t >= quizData[i].timestamp){
+            video.pause();
+            showQuestion(i);
+            break;
+        }
+    }
+});
+
+/* Create question boxes */
+function createQuestionBoxes(){
+    questionsContainer.innerHTML = '';
+    quizData.forEach((q, idx) => {
+        const box = document.createElement('div');
+        box.className = 'question-box';
+        box.id = `qbox-${idx}`;
+        box.style.display = 'none';
+
+        const qEl = document.createElement('div');
+        qEl.className = 'question';
+        qEl.textContent = q.question;
+
+        const opts = document.createElement('div');
+        opts.className = 'options';
+
+        q.options.forEach((opt, oi) => {
+            const o = document.createElement('div');
+            o.className = 'option';
+            o.innerHTML = `<span class="num">${oi+1}</span><span style="flex:1">${opt}</span>`;
+            o.addEventListener('click', () => handleOptionClick(idx, oi, o));
+            opts.appendChild(o);
+        });
+
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback-message';
+        feedback.id = `feedback-${idx}`;
+
+        box.appendChild(qEl);
+        box.appendChild(opts);
+        box.appendChild(feedback);
+        questionsContainer.appendChild(box);
+    });
+}
+
+/* Show question */
+function showQuestion(index){
+    progressIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Question ${index+1}/${quizData.length}`;
+    questionsContainer.classList.add('show');
+    document.querySelectorAll('.question-box').forEach(b => b.style.display = 'none');
+    const box = document.getElementById(`qbox-${index}`);
+    if(box) { box.style.display = 'block'; box.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+
+/* handle option click */
+function handleOptionClick(qIndex, optIndex, optionElement){
+    attempts[qIndex] = (attempts[qIndex] || 0) + 1;
+    const q = quizData[qIndex];
+    const isCorrect = (optIndex === q.correctAnswer);
+    const box = document.getElementById(`qbox-${qIndex}`);
+    const feedback = document.getElementById(`feedback-${qIndex}`);
+
+    box.querySelectorAll('.option').forEach(el => el.classList.remove('selected','wrong'));
+    if(isCorrect){
+        optionElement.classList.add('selected');
+        feedback.textContent = 'Correct! Well done.';
+        feedback.className = 'feedback-message feedback-correct';
+        feedback.style.display = 'block';
+        userAnswers[qIndex] = optIndex;
+        answeredCount++;
+        answeredCountEl.textContent = answeredCount;
+        sendAttempt({ qIndex, optionIndex: optIndex, correct: true, attempt: attempts[qIndex] });
+        setTimeout(()=> {
+            box.style.display = 'none';
+            if(answeredCount === quizData.length){ showFinish(); }
+            video.play().catch(()=>{});
+        }, 1000);
+    } else {
+        optionElement.classList.add('wrong');
+        feedback.textContent = 'Incorrect. Review and try again.';
+        feedback.className = 'feedback-message feedback-wrong';
+        feedback.style.display = 'block';
+        sendAttempt({ qIndex, optionIndex: optIndex, correct: false, attempt: attempts[qIndex] });
+        let jumpBack = 0;
+        for(let i = qIndex-1; i>=0; i--){ if(userAnswers[i] !== null) { jumpBack = quizData[i].timestamp; break; } }
+        setTimeout(()=> {
+            box.style.display = 'none';
+            video.currentTime = jumpBack;
+            video.play().catch(()=>{});
+        }, 1600);
+    }
+}
+
+/* Show finish */
+function showFinish(){
+    submitContainer.style.display = 'block';
+    submitContainer.scrollIntoView({behavior:'smooth'});
+}
+
+/* Finish click */
+submitBtn.addEventListener('click', () => { alert('Training completed. Thank you!'); });
+
+/* Send attempt */
+function sendAttempt({ qIndex, optionIndex, correct, attempt }){
+    if(!SHEET_WEB_APP_URL){ return; }
+    const payload = {
+        sessionId,
+        examName, // ✅ Added project code
+        name: userName,
+        contactNumber: userContact,
+        qIndex,
+        videoTime: Math.floor(video.currentTime),
+        question: quizData[qIndex].question,
+        selectedOption: quizData[qIndex].options[optionIndex],
+        correct,
+        attempt,
+        ts: Date.now()
+    };
+    try {
+        fetch(SHEET_WEB_APP_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        });
+    } catch(e){ console.warn('Logging failed', e); }
+}
+</script>
+</body>
+</html>
