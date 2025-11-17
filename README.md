@@ -139,5 +139,3 @@ Please ensure all code adheres to the project’s coding standards and includes 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-With the addition of the **Demo Video 🎥** section, your README is now more interactive and visually engaging. The emojis help to make the content easier to navigate and more appealing. Let me know if you want further tweaks or additions!
